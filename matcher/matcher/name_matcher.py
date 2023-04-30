@@ -53,11 +53,11 @@ class LevenshteinScorer(NameMatchScorer):
         return int(score>=self.threshold)
     
 class tfidf_matcher(NameMatchScorer):
-    def __init__(self, name1, name2,k=5,ngram_range=(1,4),threshold=0.5):
+    def __init__(self, name1, name2,k=1,ngram_range=(1,4),threshold=0.5):
         super().__init__(name1, name2, threshold)
         self.k=k
         self.ngram_range=ngram_range
-        if not isinstance(k, int) or k < 1:
+        if not isinstance(self.k, int) or self.k < 1:
             raise ValueError("k must be a positive integer")
 
 
@@ -65,19 +65,79 @@ class tfidf_matcher(NameMatchScorer):
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.neighbors import NearestNeighbors
         vectorizer = TfidfVectorizer(analyzer='char', ngram_range=self.ngram_range)
-        name_vector = vectorizer.fit_transform([self.name1,self.name2])
+        x1=vectorizer.fit_transform([self.name1])
+        x2=vectorizer.transform([self.name2])
+
         knn=NearestNeighbors(n_neighbors=self.k, metric='cosine')
-        knn.fit(name_vector)
-        return 
+        knn.fit(x2)
+        distances,indices=knn.kneighbors(x1)
+        return 1-distances.mean()
     
     def score(self):
         score=self._score()
         return int(score>=self.threshold)
+
+    
+
         
-#tfidf_matcher(["ab"],["abc"])._score()
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.neighbors import NearestNeighbors
-vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(1,4))
-a=vectorizer.fit_transform(['Sulim Yamadayev','Suleiman Bekmirzayevich Yamadayev']).toarray()
-knn=NearestNeighbors(n_neighbors=2, metric='cosine').fit(a)
-a
+class Soundex(NameMatchScorer):
+    def __init__(self, name1, name2, threshold=0.5):
+        super().__init__(name1, name2, threshold)
+    
+    def encode(self,name):
+        # Define the mapping of letters to Soundex digits
+        soundex_digits = "01230120022455012623010202"
+
+        if isinstance(name, float):
+            return ''
+
+        # Convert the name to uppercase and remove non-alphabetic characters
+        name = ''.join(c for c in name if c.isalpha())
+        name = name.upper()
+        if name=='':
+            return "" 
+
+        # Remove consecutive duplicates
+        if len(name)==1:
+            pass
+        else:
+            name = name[0] + ''.join(name[i] for i in range(1, len(name)) if name[i] != name[i-1])
+        filter_name=''
+        for char in name:
+            if ord(char) - ord('A') <= 25:
+                filter_name += char
+            name=filter_name
+
+        # Replace each letter with its Soundex digit
+        if name=='':
+            return "" 
+        soundex_code = name[0]
+        for letter in name[1:]:
+            soundex_digit = soundex_digits[ord(letter) - ord('A')]
+            if soundex_digit != soundex_code[-1]:
+                soundex_code += soundex_digit
+
+        # Remove any zeros and pad the code with trailing zeros if needed
+        soundex_code = soundex_code.replace('0', '')
+        soundex_code += '0' * (4 - len(soundex_code))
+
+        return soundex_code[:4]
+
+
+
+    
+    def score(self):
+        sound1=self.encode(self.name1)
+        sound2=self.encode(self.name2)
+        if sound1 == sound2:
+            return 1
+        elif sound1[:-1] == sound2[:-1]:
+            return 1
+        return 0
+    
+
+
+
+
+
+
