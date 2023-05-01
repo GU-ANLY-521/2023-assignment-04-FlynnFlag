@@ -9,7 +9,7 @@ To implement this package, you should run the main file with argparse.
 ## Parameters
 There are four parameters in this package.
 1. The path of the file input
-2. The algorithmn used for calculate the similarity score. There are four candidate algorithmns: Exact Match, Jaccard Similarity,Levenshtein and Nearest Neighbors, you should input. The options are [`ExactMatch`, `Jaccard`, `Levenshtein`, `tfidf`]
+2. The algorithmn used for calculate the similarity score. There are four candidate algorithmns: Exact Match, Jaccard Similarity,Levenshtein and Nearest Neighbors, you should input. The options are [`ExactMatch`, `Jaccard`, `Levenshtein`, `tfidf`,`Soundex`]
 3. The threshold for each algorithmn. It should be a number
 4. Whether to print the evaluation.
 

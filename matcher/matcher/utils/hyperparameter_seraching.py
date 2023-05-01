@@ -1,6 +1,7 @@
 from matcher.utils.parse_tsv import TsvIterator
-from matcher.name_matcher import ExactScorer,JaccardScorer,LevenshteinScorer,tfidf_matcher
+from matcher.name_matcher import ExactScorer,JaccardScorer,LevenshteinScorer,TFIDF_matcher
 from matcher.eval import eval
+
 
 # part1 generate scores
 res1=[]
@@ -17,7 +18,7 @@ for item in items:
     raw_score3.append(LevenshteinScorer(item.name1,item.name2)._score())
     res3.append(LevenshteinScorer(item.name1,item.name2,threshold=3).score())
     raw_score3.append(LevenshteinScorer(item.name1,item.name2)._score())
-    res4.append(tfidf_matcher(item.name1,item.name2).score())
+    raw_score4.append(TFIDF_matcher(item.name1,item.name2)._score())
     #res1.append(soundex(item.name1,item.name2).score())
 
 
@@ -46,5 +47,5 @@ print("3 is the best")
 
 raw4=[[1]*len(raw_score4),raw_score4]
 eval.plot_pr_curve(raw4)
-print("3 is the best")
+print("0.4994 is the best")
 

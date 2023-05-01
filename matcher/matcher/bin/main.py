@@ -4,7 +4,7 @@ import sys
 sys.path.append(".")
 
 from matcher.utils.parse_tsv import TsvIterator
-from matcher.name_matcher import ExactScorer,JaccardScorer,LevenshteinScorer,Soundex
+from matcher.name_matcher import ExactScorer,JaccardScorer,LevenshteinScorer,TFIDF_matcher,Soundex
 from matcher.eval import eval
 logger = logging.getLogger(__name__)
 
@@ -35,12 +35,24 @@ def matcher(filepath,scorer,t=False,p=False):
             for item in items:
                 res.append(LevenshteinScorer(item.name1,item.name2,threshold=3).score())
         else:
-            thres=t
+            thres=float(t)
             for item in items:
                 res.append(LevenshteinScorer(item.name1,item.name2,threshold=thres).score())
         if p== True:
             LevenRes=[[1]*len(res),res]
             print("The result of Levenshtein Similarity is:",eval.evaluate(LevenRes,"precision"),eval.evaluate(LevenRes,"recall"),eval.evaluate(LevenRes,"F1"))
+        return res
+    elif scorer=="TFIDF":
+        if t==False:      
+            for item in items:
+                res.append(TFIDF_matcher(item.name1,item.name2,threshold=0.4994).score())
+        else:
+            thres=float(t)
+            for item in items:
+                res.append(TFIDF_matcher(item.name1,item.name2,threshold=thres).score())
+        if p== True:
+            TFIDFRes=[[1]*len(res),res]
+            print("The result of Levenshtein Similarity is:",eval.evaluate(TFIDFRes,"precision"),eval.evaluate(TFIDFRes,"recall"),eval.evaluate(TFIDFRes,"F1"))
         return res
     elif scorer=="Soundex":
         for item in items:
@@ -61,7 +73,7 @@ if __name__ == "__main__":
     )
     parser.add_argument("-f", "--data", required=True, help="path to data set")
     parser.add_argument("-s", "--scorer", required=True,help="name of algorithmn",
-                        choices=["ExactMatch", "Jaccard", "Levenshtein", "tfidf","Soundex"])
+                        choices=["ExactMatch", "Jaccard", "Levenshtein", "TFIDF","Soundex"])
     parser.add_argument("-t", "--threshold", required=False, help="threshold for scorers,should be a number or False")
     parser.add_argument("-p","--print", required=False, action='store_true', help="prints out results,should be a boolen value")
     args = parser.parse_args()
@@ -78,5 +90,3 @@ if __name__ == "__main__":
 
 
             
-
-

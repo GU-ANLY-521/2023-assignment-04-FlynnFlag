@@ -52,7 +52,7 @@ class LevenshteinScorer(NameMatchScorer):
         score=self._score()
         return int(score>=self.threshold)
     
-class tfidf_matcher(NameMatchScorer):
+class TFIDF_matcher(NameMatchScorer):
     def __init__(self, name1, name2,k=1,ngram_range=(1,4),threshold=0.5):
         super().__init__(name1, name2, threshold)
         self.k=k
@@ -64,14 +64,14 @@ class tfidf_matcher(NameMatchScorer):
     def _score(self):
         from sklearn.feature_extraction.text import TfidfVectorizer
         from sklearn.neighbors import NearestNeighbors
-        vectorizer = TfidfVectorizer(analyzer='char', ngram_range=self.ngram_range)
-        x1=vectorizer.fit_transform([self.name1])
-        x2=vectorizer.transform([self.name2])
-
-        knn=NearestNeighbors(n_neighbors=self.k, metric='cosine')
-        knn.fit(x2)
+        vectorizer = TfidfVectorizer(analyzer='char', ngram_range=(1,4))
+        x1=vectorizer.fit_transform([self.name1,self.name2])
+        knn=NearestNeighbors(n_neighbors=2, metric='cosine')
+        knn.fit(x1)
         distances,indices=knn.kneighbors(x1)
+        distances
         return 1-distances.mean()
+
     
     def score(self):
         score=self._score()
@@ -135,9 +135,5 @@ class Soundex(NameMatchScorer):
             return 1
         return 0
     
-
-
-
-
 
 
